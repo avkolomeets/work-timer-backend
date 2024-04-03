@@ -14,28 +14,42 @@ const _dayToJson = (day) => {
 };
 
 const _dayDataFromBody = (req) => {
-  const { link, label, time, type, created, modified, user } = req.body;
-  return { link, label, time, type, created, modified, user };
+  const { user, year, month, day, time, workIntervals } = req.body;
+  return { user, year, month, day, time, workIntervals };
+};
+
+const _queryDays = (params) => {
+  const { user, year, month, day } = params;
+  const indexName =
+    day != null ? "days_by_user_year_month_day" : "days_by_user_year_month";
+  const matchParams =
+    day != null ? [user, year, month, day] : [user, year, month];
+  return client.query(
+    q.Map(
+      q.Paginate(q.Match(q.Index(indexName), matchParams)),
+      q.Lambda("X", q.Get(q.Var("X")))
+    )
+  );
 };
 
 const getDays = (req, res) => {
-  client
-    .query(
-      q.Map(
-        q.Paginate(q.Match(q.Index("days_by_user"), req.query.user)),
-        q.Lambda("X", q.Get(q.Var("X")))
-      )
-    )
+  _queryDays(req.query)
     .then((days) => res.status(200).json(days.data.map(_dayToJson)))
     .catch((error) => _handleError(res, error));
 };
 
 const addDay = (req, res) => {
-  const data = _dayDataFromBody(req);
-  client
-    .query(q.Create(q.Collection("days"), { data }))
-    .then((day) => res.status(200).json(_dayToJson(day)))
-    .catch((error) => _handleError(res, error));
+  _queryDays(req.query).then((days) => {
+    if (days.length) {
+      editDay(req, res);
+    } else {
+      const data = _dayDataFromBody(req);
+      client
+        .query(q.Create(q.Collection("days"), { data }))
+        .then((day) => res.status(200).json(_dayToJson(day)))
+        .catch((error) => _handleError(res, error));
+    }
+  });
 };
 
 const getDay = (req, res) => {
