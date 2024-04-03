@@ -12,10 +12,11 @@ const app = express();
 app.set("view engine", "ejs");
 app.use(express.static("styles"));
 app.use(express.urlencoded({ extended: false }));
-app.listen(process.env.PORT || 5000, (error) => {
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, (error) => {
   error
     ? console.log(errorMsg(error))
-    : console.log(successMsg(`listening to port ${process.env.PORT}`));
+    : console.log(successMsg(`listening to port ${PORT}`));
 });
 app.use(
   morgan(":method :url :status :res[content-length] - :response-time ms")
