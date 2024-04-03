@@ -22,7 +22,8 @@ const _toDayData = (params) => {
     month: month == null ? month : +month,
     day: day == null ? day : +day,
     time: time == null ? time : +time,
-    workIntervals,
+    workIntervals:
+      workIntervals == null ? workIntervals : JSON.parse(workIntervals),
   });
 };
 
