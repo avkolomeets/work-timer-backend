@@ -4,8 +4,10 @@ const {
   createCollectionItem,
   getCollectionItemById,
   deleteCollectionItemById,
+  updateCollectionItemById,
 } = require("../utils/fauna-query-util");
 const { errorHandler } = require("../utils/error-util");
+const { removeUndefinedProperties } = require("../utils/json-util");
 
 const _taskToJson = (task) => {
   return {
@@ -16,7 +18,15 @@ const _taskToJson = (task) => {
 
 const _taskDataFromBody = (req) => {
   const { link, label, time, type, created, modified, user } = req.body;
-  return { link, label, time, type, created, modified, user };
+  return removeUndefinedProperties({
+    user,
+    link,
+    label,
+    time: time != null ? +time : time,
+    type,
+    created: created != null ? +created : created,
+    modified: modified != null ? +modified : modified,
+  });
 };
 
 const getTasks = (req, res) => {
@@ -28,6 +38,10 @@ const getTasks = (req, res) => {
 
 const addTask = (req, res) => {
   const data = _taskDataFromBody(req);
+  if (!data.user) {
+    errorHandler(res)(new Error("user not specified"));
+    return;
+  }
   client
     .query(createCollectionItem("tasks", data))
     .then((task) => res.status(200).json(_taskToJson(task)))

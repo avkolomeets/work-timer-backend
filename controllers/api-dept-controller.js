@@ -1,3 +1,4 @@
+const { client } = require("./client");
 const { errorHandler } = require("../utils/error-util");
 const {
   getAllByIndexName,
@@ -14,11 +15,17 @@ const _deptToJson = (dept) => {
 
 const _deptDataFromBody = (req) => {
   const { user, dept } = req.body;
-  return { user, dept };
+  return { user, dept: +dept || 0 };
 };
 
 const _queryDepts = (params) => {
-  return client.query(getAllByIndexName("depts_by_user", params.user));
+  if (!params.user) {
+    return Promise.reject(new Error("user not specified"));
+  }
+
+  return client
+    .query(getAllByIndexName("depts_by_user", params.user))
+    .then((r) => r.data || []);
 };
 
 const addDept = (req, res) => {
@@ -27,6 +34,7 @@ const addDept = (req, res) => {
       editDept(req, res);
     } else {
       const data = _deptDataFromBody(req);
+      data.user = data.user || req.query.user;
       client
         .query(createCollectionItem("depts", data))
         .then((dept) => res.status(200).json(_deptToJson(dept)))
@@ -37,7 +45,7 @@ const addDept = (req, res) => {
 
 const getDept = (req, res) => {
   _queryDepts(req.query)
-    .then((depts) => res.status(200).json(depts.data.map(_deptToJson)[0]))
+    .then((depts) => res.status(200).json(depts.map(_deptToJson)[0]))
     .catch(errorHandler(res));
 };
 
@@ -45,7 +53,7 @@ const deleteDept = (req, res) => {
   _queryDepts(req.query)
     .then((depts) => {
       if (depts.length) {
-        const id = depts[0].id;
+        const id = depts[0].ref.id;
         client
           .query(deleteCollectionItemById("depts", id))
           .then((dept) => res.status(200).json(id))
@@ -62,7 +70,7 @@ const editDept = (req, res) => {
     if (depts.length) {
       const data = _deptDataFromBody(req);
       client
-        .query(updateCollectionItemById("depts", depts[0].id, data))
+        .query(updateCollectionItemById("depts", depts[0].ref.id, data))
         .then((dept) => res.json(_deptToJson(dept)))
         .catch(errorHandler(res));
     } else {
