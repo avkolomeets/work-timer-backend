@@ -42,15 +42,19 @@ const getDept = (req, res) => {
 };
 
 const deleteDept = (req, res) => {
-  _queryDepts(req.query).then((depts) => {
-    if (depts.length) {
-      const id = depts[0].id;
-      client
-        .query(deleteCollectionItemById("depts", id))
-        .then((dept) => res.status(200).json(id))
-        .catch(errorHandler(res));
-    }
-  });
+  _queryDepts(req.query)
+    .then((depts) => {
+      if (depts.length) {
+        const id = depts[0].id;
+        client
+          .query(deleteCollectionItemById("depts", id))
+          .then((dept) => res.status(200).json(id))
+          .catch(errorHandler(res));
+      } else {
+        throw new Error("item not found");
+      }
+    })
+    .catch(errorHandler(res));
 };
 
 const editDept = (req, res) => {
@@ -61,6 +65,8 @@ const editDept = (req, res) => {
         .query(updateCollectionItemById("depts", depts[0].id, data))
         .then((dept) => res.json(_deptToJson(dept)))
         .catch(errorHandler(res));
+    } else {
+      addDept(req, res);
     }
   });
 };
