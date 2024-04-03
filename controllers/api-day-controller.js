@@ -19,11 +19,12 @@ const _dayDataFromBody = (req) => {
 };
 
 const _queryDays = (params) => {
+  console.log({ ...params });
   const { user, year, month, day } = params;
   const indexName =
     day != null ? "days_by_user_year_month_day" : "days_by_user_year_month";
   const matchParams =
-    day != null ? [user, year, month, day] : [user, year, month];
+    day != null ? [user, +year, +month, +day] : [user, +year, +month];
   return client.query(getAllByIndexName(indexName, matchParams));
 };
 
