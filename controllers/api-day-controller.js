@@ -1,14 +1,14 @@
-const faunadb = require("faunadb");
 const { client } = require("./client");
-const q = faunadb.query;
-
-const _handleError = (res, error) => {
-  res.status(500).send(error.message);
-};
+const {
+  getAllByIndexName,
+  createCollectionItem,
+  deleteCollectionItemById,
+  updateCollectionItemById,
+} = require("../utils/fauna-query-util");
+const { errorHandler } = require("../utils/error-util");
 
 const _dayToJson = (day) => {
   return {
-    id: day.ref.id,
     ...day.data,
   };
 };
@@ -24,18 +24,13 @@ const _queryDays = (params) => {
     day != null ? "days_by_user_year_month_day" : "days_by_user_year_month";
   const matchParams =
     day != null ? [user, year, month, day] : [user, year, month];
-  return client.query(
-    q.Map(
-      q.Paginate(q.Match(q.Index(indexName), matchParams)),
-      q.Lambda("X", q.Get(q.Var("X")))
-    )
-  );
+  return client.query(getAllByIndexName(indexName, matchParams));
 };
 
 const getDays = (req, res) => {
   _queryDays(req.query)
     .then((days) => res.status(200).json(days.data.map(_dayToJson)))
-    .catch((error) => _handleError(res, error));
+    .catch(errorHandler(res));
 };
 
 const addDay = (req, res) => {
@@ -45,34 +40,41 @@ const addDay = (req, res) => {
     } else {
       const data = _dayDataFromBody(req);
       client
-        .query(q.Create(q.Collection("days"), { data }))
+        .query(createCollectionItem("days", data))
         .then((day) => res.status(200).json(_dayToJson(day)))
-        .catch((error) => _handleError(res, error));
+        .catch(errorHandler(res));
     }
   });
 };
 
 const getDay = (req, res) => {
-  client
-    .query(q.Get(q.Ref(q.Collection("days"), req.params.id)))
-    .then((day) => res.status(200).json(_dayToJson(day)))
-    .catch((error) => _handleError(res, error));
+  _queryDays(req.query)
+    .then((days) => res.status(200).json(days.data.map(_dayToJson)[0]))
+    .catch(errorHandler(res));
 };
 
 const deleteDay = (req, res) => {
-  const { id } = req.params;
-  client
-    .query(q.Delete(q.Ref(q.Collection("days"), id)))
-    .then((day) => res.status(200).json(id))
-    .catch((error) => _handleError(res, error));
+  _queryDays(req.query).then((days) => {
+    if (days.length) {
+      const id = days[0].id;
+      client
+        .query(deleteCollectionItemById("days", id))
+        .then((day) => res.status(200).json(id))
+        .catch(errorHandler(res));
+    }
+  });
 };
 
 const editDay = (req, res) => {
-  const data = _dayDataFromBody(req);
-  client
-    .query(q.Update(q.Ref(q.Collection("days"), req.params.id), { data }))
-    .then((day) => res.json(_dayToJson(day)))
-    .catch((error) => _handleError(res, error));
+  _queryDays(req.query).then((days) => {
+    if (days.length) {
+      const data = _dayDataFromBody(req);
+      client
+        .query(updateCollectionItemById("days", days[0].id, data))
+        .then((day) => res.json(_dayToJson(day)))
+        .catch(errorHandler(res));
+    }
+  });
 };
 
 module.exports = {

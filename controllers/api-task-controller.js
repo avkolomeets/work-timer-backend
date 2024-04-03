@@ -1,10 +1,11 @@
-const faunadb = require("faunadb");
 const { client } = require("./client");
-const q = faunadb.query;
-
-const _handleError = (res, error) => {
-  res.status(500).send(error.message);
-};
+const {
+  getAllByIndexName,
+  createCollectionItem,
+  getCollectionItemById,
+  deleteCollectionItemById,
+} = require("../utils/fauna-query-util");
+const { errorHandler } = require("../utils/error-util");
 
 const _taskToJson = (task) => {
   return {
@@ -20,45 +21,40 @@ const _taskDataFromBody = (req) => {
 
 const getTasks = (req, res) => {
   client
-    .query(
-      q.Map(
-        q.Paginate(q.Match(q.Index("tasks_by_user"), req.query.user)),
-        q.Lambda("X", q.Get(q.Var("X")))
-      )
-    )
+    .query(getAllByIndexName("tasks_by_user", req.query.user))
     .then((tasks) => res.status(200).json(tasks.data.map(_taskToJson)))
-    .catch((error) => _handleError(res, error));
+    .catch(errorHandler(res));
 };
 
 const addTask = (req, res) => {
   const data = _taskDataFromBody(req);
   client
-    .query(q.Create(q.Collection("tasks"), { data }))
+    .query(createCollectionItem("tasks", data))
     .then((task) => res.status(200).json(_taskToJson(task)))
-    .catch((error) => _handleError(res, error));
+    .catch(errorHandler(res));
 };
 
 const getTask = (req, res) => {
   client
-    .query(q.Get(q.Ref(q.Collection("tasks"), req.params.id)))
+    .query(getCollectionItemById("tasks", req.params.id))
     .then((task) => res.status(200).json(_taskToJson(task)))
-    .catch((error) => _handleError(res, error));
+    .catch(errorHandler(res));
 };
 
 const deleteTask = (req, res) => {
   const { id } = req.params;
   client
-    .query(q.Delete(q.Ref(q.Collection("tasks"), id)))
+    .query(deleteCollectionItemById("tasks", id))
     .then((task) => res.status(200).json(id))
-    .catch((error) => _handleError(res, error));
+    .catch(errorHandler(res));
 };
 
 const editTask = (req, res) => {
   const data = _taskDataFromBody(req);
   client
-    .query(q.Update(q.Ref(q.Collection("tasks"), req.params.id), { data }))
+    .query(updateCollectionItemById("tasks", req.params.id, data))
     .then((task) => res.json(_taskToJson(task)))
-    .catch((error) => _handleError(res, error));
+    .catch(errorHandler(res));
 };
 
 module.exports = {
