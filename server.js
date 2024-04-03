@@ -3,6 +3,8 @@ const chalk = require("chalk");
 const morgan = require("morgan");
 require("dotenv").config();
 const apiTaskRoutes = require("./routes/api-task-routes");
+const apiDayRoutes = require("./routes/api-day-routes");
+const apiDeptRoutes = require("./routes/api-dept-routes");
 const createPath = require("./utils/create-path");
 
 const errorMsg = chalk.bgKeyword("white").redBright;
@@ -26,6 +28,8 @@ app.get("/", (req, res) => {
   res.render(createPath("index"), { title });
 });
 app.use(apiTaskRoutes);
+app.use(apiDayRoutes);
+app.use(apiDeptRoutes);
 app.use((req, res) => {
   const title = "Error Page";
   res.status(404).render(createPath("error"), { title });
