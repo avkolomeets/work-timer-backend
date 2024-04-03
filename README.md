@@ -1,8 +1,13 @@
 # Demo
 
+### Welcome page
 https://work-timer-backend.onrender.com
+
+### Error page
 https://work-timer-backend.onrender.com/error
-https://work-timer-backend.onrender.com/tasks?user=demo
+
+### Get tasks for a demo user
+https://work-timer-backend.onrender.com/api/tasks?user=demo
 
 # Info
 
