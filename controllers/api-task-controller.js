@@ -19,9 +19,12 @@ const _taskToJson = (task) => {
 
 const _taskDataFromReq = (req) => {
   const _toParams = (params) => {
-    const { link, label, time, type, created, modified, user } = params;
+    const { year, month, link, label, time, type, created, modified, user } =
+      params;
     return removeUndefinedProperties({
       user,
+      year: toNumberOrUndefined(year),
+      month: toNumberOrUndefined(month),
       link,
       label,
       time: toNumberOrUndefined(time),
@@ -41,6 +44,14 @@ const addTask = (req, res) => {
     errorHandler(res)(new Error("user not specified"));
     return;
   }
+  if (!data.year) {
+    errorHandler(res)(new Error("year not specified"));
+    return;
+  }
+  if (!data.month) {
+    errorHandler(res)(new Error("month not specified"));
+    return;
+  }
   client
     .query(createCollectionItem("tasks", data))
     .then((task) => res.status(200).json(_taskToJson(task)))
@@ -50,8 +61,9 @@ const addTask = (req, res) => {
 // READ
 
 const getTasks = (req, res) => {
+  const { user, year, month } = req.query;
   client
-    .query(getAllByIndexName("tasks_by_user", req.query.user))
+    .query(getAllByIndexName("tasks_by_user_year_month", [user, +year, +month]))
     .then((tasks) => res.status(200).json(tasks.data.map(_taskToJson)))
     .catch(errorHandler(res));
 };
