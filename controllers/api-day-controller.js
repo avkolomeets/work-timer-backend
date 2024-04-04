@@ -7,6 +7,7 @@ const {
 } = require("../utils/fauna-query-util");
 const { errorHandler } = require("../utils/error-util");
 const { removeUndefinedProperties } = require("../utils/json-util");
+const { toNumberOrUndefined } = require("../utils/number-util");
 
 const _dayToJson = (day) => {
   return {
@@ -14,17 +15,20 @@ const _dayToJson = (day) => {
   };
 };
 
-const _toDayData = (params) => {
-  const { user, year, month, day, time, workIntervals } = params;
-  return removeUndefinedProperties({
-    user,
-    year: year == null ? year : +year,
-    month: month == null ? month : +month,
-    day: day == null ? day : +day,
-    time: time == null ? time : +time,
-    workIntervals:
-      workIntervals == null ? workIntervals : JSON.parse(workIntervals),
-  });
+const _toDataFromReq = (params) => {
+  const _toParams = (params) => {
+    const { user, year, month, day, time, workIntervals } = params;
+    return removeUndefinedProperties({
+      user,
+      year: toNumberOrUndefined(year),
+      month: toNumberOrUndefined(month),
+      day: toNumberOrUndefined(day),
+      time: toNumberOrUndefined(time),
+      workIntervals:
+        workIntervals == null ? workIntervals : JSON.parse(workIntervals),
+    });
+  };
+  return { ..._toParams(req.query), ..._toParams(req.body) };
 };
 
 const _queryDays = (params, singleAction) => {
@@ -48,11 +52,7 @@ const _queryDays = (params, singleAction) => {
     .then((r) => r.data || []);
 };
 
-const getDays = (req, res) => {
-  _queryDays(req.query)
-    .then((days) => res.status(200).json(days.map(_dayToJson)))
-    .catch(errorHandler(res));
-};
+// CREATE
 
 const addDay = (req, res) => {
   _queryDays(req.query, "require")
@@ -60,7 +60,7 @@ const addDay = (req, res) => {
       if (days.length) {
         editDay(req, res);
       } else {
-        const data = { ..._toDayData(req.query), ..._toDayData(req.body) };
+        const data = _toDataFromReq(req);
         client
           .query(createCollectionItem("days", data))
           .then((day) => res.status(200).json(_dayToJson(day)))
@@ -70,11 +70,39 @@ const addDay = (req, res) => {
     .catch(errorHandler(res));
 };
 
+// READ
+
+const getDays = (req, res) => {
+  _queryDays(req.query)
+    .then((days) => res.status(200).json(days.map(_dayToJson)))
+    .catch(errorHandler(res));
+};
+
 const getDay = (req, res) => {
   _queryDays(req.query, "return-empty")
     .then((days) => res.status(200).json(days.map(_dayToJson)[0]))
     .catch(errorHandler(res));
 };
+
+// UPDATE
+
+const editDay = (req, res) => {
+  _queryDays(req.query, "require")
+    .then((days) => {
+      if (days.length) {
+        const data = _toDataFromReq(req);
+        client
+          .query(updateCollectionItemById("days", days[0].ref.id, data))
+          .then((day) => res.json(_dayToJson(day)))
+          .catch(errorHandler(res));
+      } else {
+        addDay(req, res);
+      }
+    })
+    .catch(errorHandler(res));
+};
+
+// DELETE
 
 const deleteDay = (req, res) => {
   _queryDays(req.query, "require")
@@ -85,22 +113,6 @@ const deleteDay = (req, res) => {
           .query(deleteCollectionItemById("days", id))
           .then((day) => res.status(200).json(id))
           .catch(errorHandler(res));
-      }
-    })
-    .catch(errorHandler(res));
-};
-
-const editDay = (req, res) => {
-  _queryDays(req.query, "require")
-    .then((days) => {
-      if (days.length) {
-        const data = { ..._toDayData(req.query), ..._toDayData(req.body) };
-        client
-          .query(updateCollectionItemById("days", days[0].ref.id, data))
-          .then((day) => res.json(_dayToJson(day)))
-          .catch(errorHandler(res));
-      } else {
-        addDay(req, res);
       }
     })
     .catch(errorHandler(res));

@@ -6,6 +6,8 @@ const {
   deleteCollectionItemById,
   updateCollectionItemById,
 } = require("../utils/fauna-query-util");
+const { removeUndefinedProperties } = require("../utils/json-util");
+const { toNumberOrUndefined } = require("../utils/number-util");
 
 const _deptToJson = (dept) => {
   return {
@@ -13,9 +15,15 @@ const _deptToJson = (dept) => {
   };
 };
 
-const _deptDataFromBody = (req) => {
-  const { user, dept } = req.body;
-  return { user, dept: +dept || 0 };
+const _deptDataFromReq = (req) => {
+  const _toParams = (params) => {
+    const { user, dept } = params;
+    return removeUndefinedProperties({
+      user,
+      dept: toNumberOrUndefined(dept),
+    });
+  };
+  return { ..._toParams(req.query), ..._toParams(req.body) };
 };
 
 const _queryDepts = (params) => {
@@ -28,13 +36,14 @@ const _queryDepts = (params) => {
     .then((r) => r.data || []);
 };
 
+// CREATE
+
 const addDept = (req, res) => {
   _queryDepts(req.query).then((depts) => {
     if (depts.length) {
       editDept(req, res);
     } else {
-      const data = _deptDataFromBody(req);
-      data.user = data.user || req.query.user;
+      const data = _deptDataFromReq(req);
       client
         .query(createCollectionItem("depts", data))
         .then((dept) => res.status(200).json(_deptToJson(dept)))
@@ -43,11 +52,31 @@ const addDept = (req, res) => {
   });
 };
 
+// READ
+
 const getDept = (req, res) => {
   _queryDepts(req.query)
     .then((depts) => res.status(200).json(depts.map(_deptToJson)[0]))
     .catch(errorHandler(res));
 };
+
+// UPDATE
+
+const editDept = (req, res) => {
+  _queryDepts(req.query).then((depts) => {
+    if (depts.length) {
+      const data = _deptDataFromReq(req);
+      client
+        .query(updateCollectionItemById("depts", depts[0].ref.id, data))
+        .then((dept) => res.json(_deptToJson(dept)))
+        .catch(errorHandler(res));
+    } else {
+      addDept(req, res);
+    }
+  });
+};
+
+// DELETE
 
 const deleteDept = (req, res) => {
   _queryDepts(req.query)
@@ -63,20 +92,6 @@ const deleteDept = (req, res) => {
       }
     })
     .catch(errorHandler(res));
-};
-
-const editDept = (req, res) => {
-  _queryDepts(req.query).then((depts) => {
-    if (depts.length) {
-      const data = _deptDataFromBody(req);
-      client
-        .query(updateCollectionItemById("depts", depts[0].ref.id, data))
-        .then((dept) => res.json(_deptToJson(dept)))
-        .catch(errorHandler(res));
-    } else {
-      addDept(req, res);
-    }
-  });
 };
 
 module.exports = {
