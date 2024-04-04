@@ -6,14 +6,17 @@ const apiTaskRoutes = require("./routes/api-task-routes");
 const apiDayRoutes = require("./routes/api-day-routes");
 const apiDeptRoutes = require("./routes/api-dept-routes");
 const createPath = require("./utils/create-path");
+var cors = require("cors");
 
 const errorMsg = chalk.bgKeyword("white").redBright;
 const successMsg = chalk.bgKeyword("green").white;
 
 const app = express();
+app.use(cors());
 app.set("view engine", "ejs");
 app.use(express.static("styles"));
-app.use(express.urlencoded({ extended: false }));
+//app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, (error) => {
   error

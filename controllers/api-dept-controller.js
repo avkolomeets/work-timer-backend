@@ -16,6 +16,10 @@ const _deptToJson = (dept) => {
 };
 
 const _deptDataFromReq = (req) => {
+  console.log("Query: ");
+  console.log(req.query);
+  console.log("Body: ");
+  console.log(req.body);
   const _toParams = (params) => {
     const { user, dept } = params;
     return removeUndefinedProperties({
@@ -56,7 +60,7 @@ const addDept = (req, res) => {
 
 const getDept = (req, res) => {
   _queryDepts(req.query)
-    .then((depts) => res.status(200).json(depts.map(_deptToJson)[0]))
+    .then((depts) => res.status(200).json(depts.map(_deptToJson)[0] || {}))
     .catch(errorHandler(res));
 };
 

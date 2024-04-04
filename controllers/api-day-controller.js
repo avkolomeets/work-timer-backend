@@ -15,7 +15,7 @@ const _dayToJson = (day) => {
   };
 };
 
-const _toDataFromReq = (params) => {
+const _toDataFromReq = (req) => {
   const _toParams = (params) => {
     const { user, year, month, day, time, workIntervals } = params;
     return removeUndefinedProperties({
@@ -25,7 +25,11 @@ const _toDataFromReq = (params) => {
       day: toNumberOrUndefined(day),
       time: toNumberOrUndefined(time),
       workIntervals:
-        workIntervals == null ? workIntervals : JSON.parse(workIntervals),
+        workIntervals == null
+          ? workIntervals
+          : typeof workIntervals === "string"
+          ? JSON.parse(workIntervals)
+          : workIntervals,
     });
   };
   return { ..._toParams(req.query), ..._toParams(req.body) };
