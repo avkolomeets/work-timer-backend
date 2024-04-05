@@ -6,8 +6,8 @@ https://work-timer-backend.onrender.com
 ### Error page
 https://work-timer-backend.onrender.com/error
 
-### Get tasks for a demo user
-https://work-timer-backend.onrender.com/api/tasks?user=demo
+### Get tasks for the default user
+https://work-timer-backend.onrender.com/api/tasks
 
 # Info
 
