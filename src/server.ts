@@ -1,24 +1,27 @@
-const express = require("express");
-const chalk = require("chalk");
-const morgan = require("morgan");
-require("dotenv").config();
-const apiTaskRoutes = require("./routes/api-task-routes");
-const apiDayRoutes = require("./routes/api-day-routes");
-const apiDeptRoutes = require("./routes/api-dept-routes");
-const createPath = require("./utils/create-path");
-var cors = require("cors");
+import { Application } from "express";
+import { apiDayRoutes } from "routes/api-day-routes";
+import { apiDeptRoutes } from "routes/api-dept-routes";
+import { apiTaskRoutes } from "routes/api-task-routes";
+import { createPath } from "utils/create-path";
+
+import express from "express";
+import chalk from "chalk";
+import morgan from "morgan";
+import dotenv from "dotenv";
+dotenv.config();
+import cors from "cors";
 
 const errorMsg = chalk.bgKeyword("white").redBright;
 const successMsg = chalk.bgKeyword("green").white;
 
-const app = express();
+const app: Application = express();
 app.use(cors());
 app.set("view engine", "ejs");
 app.use(express.static("styles"));
 //app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, (error) => {
+(app as any).listen(PORT, (error: any) => {
   error
     ? console.log(errorMsg(error))
     : console.log(successMsg(`listening to port ${PORT}`));

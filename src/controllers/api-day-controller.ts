@@ -1,41 +1,14 @@
-const { client } = require("./client");
-const {
-  getAllByIndexName,
+import {
   createCollectionItem,
   deleteCollectionItemById,
+  getAllByIndexName,
   updateCollectionItemById,
-} = require("../utils/fauna-query-util");
-const { errorHandler } = require("../utils/error-util");
-const { removeUndefinedProperties } = require("../utils/json-util");
-const { toNumberOrUndefined } = require("../utils/number-util");
+} from "utils/fauna-query-util";
+import { client } from "./client";
+import { dayDataFromReq, dayToJson } from "models/day";
+import { errorHandler } from "utils/error-util";
 
-const _dayToJson = (day) => {
-  return {
-    ...day.data,
-  };
-};
-
-const _toDataFromReq = (req) => {
-  const _toParams = (params) => {
-    const { user, year, month, day, time, workIntervals } = params;
-    return removeUndefinedProperties({
-      user,
-      year: toNumberOrUndefined(year),
-      month: toNumberOrUndefined(month),
-      day: toNumberOrUndefined(day),
-      time: toNumberOrUndefined(time),
-      workIntervals:
-        workIntervals == null
-          ? workIntervals
-          : typeof workIntervals === "string"
-          ? JSON.parse(workIntervals)
-          : workIntervals,
-    });
-  };
-  return { ..._toParams(req.query), ..._toParams(req.body) };
-};
-
-const _queryDays = (params, singleAction) => {
+const _queryDays = (params, singleAction?) => {
   if (!params.user) {
     return Promise.reject(new Error("user not specified"));
   }
@@ -53,21 +26,21 @@ const _queryDays = (params, singleAction) => {
     day != null ? [user, +year, +month, +day] : [user, +year, +month];
   return client
     .query(getAllByIndexName(indexName, matchParams))
-    .then((r) => r.data || []);
+    .then((r: any) => r.data || []);
 };
 
 // CREATE
 
-const addDay = (req, res) => {
+export const addDay = (req, res) => {
   _queryDays(req.query, "require")
     .then((days) => {
       if (days.length) {
         editDay(req, res);
       } else {
-        const data = _toDataFromReq(req);
+        const data = dayDataFromReq(req);
         client
           .query(createCollectionItem("days", data))
-          .then((day) => res.status(200).json(_dayToJson(day)))
+          .then((day) => res.status(200).json(dayToJson(day)))
           .catch(errorHandler(res));
       }
     })
@@ -76,28 +49,28 @@ const addDay = (req, res) => {
 
 // READ
 
-const getDays = (req, res) => {
+export const getDays = (req, res) => {
   _queryDays(req.query)
-    .then((days) => res.status(200).json(days.map(_dayToJson)))
+    .then((days) => res.status(200).json(days.map(dayToJson)))
     .catch(errorHandler(res));
 };
 
 const getDay = (req, res) => {
   _queryDays(req.query, "return-empty")
-    .then((days) => res.status(200).json(days.map(_dayToJson)[0]))
+    .then((days) => res.status(200).json(days.map(dayToJson)[0]))
     .catch(errorHandler(res));
 };
 
 // UPDATE
 
-const editDay = (req, res) => {
+export const editDay = (req, res) => {
   _queryDays(req.query, "require")
     .then((days) => {
       if (days.length) {
-        const data = _toDataFromReq(req);
+        const data = dayDataFromReq(req);
         client
           .query(updateCollectionItemById("days", days[0].ref.id, data))
-          .then((day) => res.json(_dayToJson(day)))
+          .then((day) => res.json(dayToJson(day)))
           .catch(errorHandler(res));
       } else {
         addDay(req, res);
@@ -108,7 +81,7 @@ const editDay = (req, res) => {
 
 // DELETE
 
-const deleteDay = (req, res) => {
+export const deleteDay = (req, res) => {
   _queryDays(req.query, "require")
     .then((days) => {
       if (days.length) {
@@ -120,12 +93,4 @@ const deleteDay = (req, res) => {
       }
     })
     .catch(errorHandler(res));
-};
-
-module.exports = {
-  getDays,
-  addDay,
-  getDay,
-  deleteDay,
-  editDay,
 };

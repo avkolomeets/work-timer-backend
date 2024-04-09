@@ -1,4 +1,4 @@
-const removeUndefinedProperties = (obj) => {
+export const removeUndefinedProperties = (obj) => {
   obj &&
     Object.keys(obj).forEach((key) => {
       if (obj[key] === undefined) {
@@ -7,5 +7,3 @@ const removeUndefinedProperties = (obj) => {
     });
   return obj;
 };
-
-module.exports = { removeUndefinedProperties };
