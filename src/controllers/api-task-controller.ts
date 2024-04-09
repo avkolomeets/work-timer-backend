@@ -1,14 +1,14 @@
 // CREATE
 
-import { taskDataFromReq, taskToJson } from "models/task";
-import { errorHandler } from "utils/error-util";
+import { taskDataFromReq, taskToJson } from "../models/task";
+import { errorHandler } from "../utils/error-util";
 import {
   createCollectionItem,
   deleteCollectionItemById,
   getAllByIndexName,
   getCollectionItemById,
   updateCollectionItemById,
-} from "utils/fauna-query-util";
+} from "../utils/fauna-query-util";
 import { client } from "./client";
 
 export const addTask = (req, res) => {

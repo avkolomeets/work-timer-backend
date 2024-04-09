@@ -3,10 +3,10 @@ import {
   deleteCollectionItemById,
   getAllByIndexName,
   updateCollectionItemById,
-} from "utils/fauna-query-util";
+} from "../utils/fauna-query-util";
 import { client } from "./client";
-import { dayDataFromReq, dayToJson } from "models/day";
-import { errorHandler } from "utils/error-util";
+import { dayDataFromReq, dayToJson } from "../models/day";
+import { errorHandler } from "../utils/error-util";
 
 const _queryDays = (params, singleAction?) => {
   if (!params.user) {

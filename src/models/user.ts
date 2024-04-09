@@ -1,4 +1,4 @@
-import { removeUndefinedProperties } from "utils/json-util";
+import { removeUndefinedProperties } from "../utils/json-util";
 
 export const userToJson = (user) => {
   return {

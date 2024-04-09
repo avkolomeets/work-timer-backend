@@ -4,7 +4,7 @@ import {
   editTask,
   getTask,
   getTasks,
-} from "controllers/api-task-controller";
+} from "../controllers/api-task-controller";
 import { Router } from "express";
 
 import express from "express";

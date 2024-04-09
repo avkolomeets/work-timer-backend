@@ -3,7 +3,7 @@ import {
   deleteUser,
   editUser,
   getUser,
-} from "controllers/api-user-controller";
+} from "../controllers/api-user-controller";
 import { Router } from "express";
 
 import express from "express";

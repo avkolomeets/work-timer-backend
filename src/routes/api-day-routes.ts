@@ -3,7 +3,7 @@ import {
   deleteDay,
   editDay,
   getDays,
-} from "controllers/api-day-controller";
+} from "../controllers/api-day-controller";
 import { Router } from "express";
 
 import express from "express";

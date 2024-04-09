@@ -3,7 +3,7 @@ import {
   deleteDept,
   editDept,
   getDept,
-} from "controllers/api-dept-controller";
+} from "../controllers/api-dept-controller";
 import { Router } from "express";
 
 import express from "express";

@@ -1,15 +1,16 @@
-import { Application } from "express";
-import { apiDayRoutes } from "routes/api-day-routes";
-import { apiDeptRoutes } from "routes/api-dept-routes";
-import { apiTaskRoutes } from "routes/api-task-routes";
-import { createPath } from "utils/create-path";
-
-import express from "express";
-import chalk from "chalk";
-import morgan from "morgan";
 import dotenv from "dotenv";
 dotenv.config();
+
+import { Application } from "express";
+import { apiDayRoutes } from "./routes/api-day-routes";
+import { apiDeptRoutes } from "./routes/api-dept-routes";
+import { apiTaskRoutes } from "./routes/api-task-routes";
+import { createPath } from "./utils/create-path";
+
+import chalk from "chalk";
 import cors from "cors";
+import express from "express";
+import morgan from "morgan";
 
 const errorMsg = chalk.bgKeyword("white").redBright;
 const successMsg = chalk.bgKeyword("green").white;

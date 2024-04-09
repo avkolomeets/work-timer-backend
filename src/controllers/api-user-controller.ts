@@ -3,10 +3,10 @@ import {
   deleteCollectionItemById,
   getAllByIndexName,
   updateCollectionItemById,
-} from "utils/fauna-query-util";
+} from "../utils/fauna-query-util";
 import { client } from "./client";
-import { userDataFromReq, userToJson } from "models/user";
-import { errorHandler } from "utils/error-util";
+import { userDataFromReq, userToJson } from "../models/user";
+import { errorHandler } from "../utils/error-util";
 
 const _queryUsers = (params) => {
   if (!params.user) {

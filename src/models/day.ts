@@ -1,5 +1,5 @@
-import { removeUndefinedProperties } from "utils/json-util";
-import { toNumberOrUndefined } from "utils/number-util";
+import { removeUndefinedProperties } from "../utils/json-util";
+import { toNumberOrUndefined } from "../utils/number-util";
 
 export const dayToJson = (day) => {
   return {
