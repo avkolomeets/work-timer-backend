@@ -3,18 +3,27 @@ import {
   deleteCollectionItemById,
   getAllByIndexName,
   updateCollectionItemById,
-} from "../utils/fauna-query-util";
+} from "../utils/query/fauna-query-util";
 import { client } from "./client";
 import { deptDataFromReq, deptToJson } from "../models/dept";
 import { errorHandler } from "../utils/error-util";
+import {
+  CollectionItem,
+  DeptCollectionItemData,
+} from "models/intefaces-collections";
+import { resultHandler } from "../utils/response-util";
+import { userDataFromKey } from "../utils/auth/key-util";
 
-const _queryDepts = (params) => {
-  if (!params.user) {
-    return Promise.reject(new Error("user not specified"));
-  }
+type DeptQueryParams = {
+  token: string;
+};
 
+const _queryDepts = (
+  params: DeptQueryParams
+): Promise<CollectionItem<DeptCollectionItemData>[]> => {
+  const username = userDataFromKey(params.token).username;
   return client
-    .query(getAllByIndexName("depts_by_user", params.user))
+    .query(getAllByIndexName("depts_by_user", username))
     .then((r: any) => r.data || []);
 };
 
@@ -28,7 +37,9 @@ export const addDept = (req, res) => {
       const data = deptDataFromReq(req);
       client
         .query(createCollectionItem("depts", data))
-        .then((dept) => res.status(200).json(deptToJson(dept)))
+        .then((dept: CollectionItem<DeptCollectionItemData>) =>
+          resultHandler(res, deptToJson(dept))
+        )
         .catch(errorHandler(res));
     }
   });
@@ -38,7 +49,7 @@ export const addDept = (req, res) => {
 
 export const getDept = (req, res) => {
   _queryDepts(req.query)
-    .then((depts) => res.status(200).json(depts.map(deptToJson)[0] || {}))
+    .then((depts) => resultHandler(res, depts.map(deptToJson)[0] || {}))
     .catch(errorHandler(res));
 };
 
@@ -50,7 +61,9 @@ export const editDept = (req, res) => {
       const data = deptDataFromReq(req);
       client
         .query(updateCollectionItemById("depts", depts[0].ref.id, data))
-        .then((dept) => res.json(deptToJson(dept)))
+        .then((dept: CollectionItem<DeptCollectionItemData>) =>
+          res.json(deptToJson(dept))
+        )
         .catch(errorHandler(res));
     } else {
       addDept(req, res);
@@ -67,7 +80,7 @@ export const deleteDept = (req, res) => {
         const id = depts[0].ref.id;
         client
           .query(deleteCollectionItemById("depts", id))
-          .then((dept) => res.status(200).json(id))
+          .then((dept) => resultHandler(res, id))
           .catch(errorHandler(res));
       } else {
         throw new Error("item not found");

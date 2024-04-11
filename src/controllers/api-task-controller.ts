@@ -1,5 +1,9 @@
 // CREATE
 
+import {
+  CollectionItem,
+  TaskCollectionItemData,
+} from "models/intefaces-collections";
 import { taskDataFromReq, taskToJson } from "../models/task";
 import { errorHandler } from "../utils/error-util";
 import {
@@ -8,11 +12,14 @@ import {
   getAllByIndexName,
   getCollectionItemById,
   updateCollectionItemById,
-} from "../utils/fauna-query-util";
+} from "../utils/query/fauna-query-util";
 import { client } from "./client";
+import { resultHandler } from "../utils/response-util";
+import { userDataFromKey } from "utils/auth/key-util";
 
 export const addTask = (req, res) => {
   const data = taskDataFromReq(req);
+  const username = userDataFromKey(params.token).username;
   if (!data.user) {
     errorHandler(res)(new Error("user not specified"));
     return;
@@ -27,7 +34,9 @@ export const addTask = (req, res) => {
   }
   client
     .query(createCollectionItem("tasks", data))
-    .then((task) => res.status(200).json(taskToJson(task)))
+    .then((task: CollectionItem<TaskCollectionItemData>) =>
+      resultHandler(res, taskToJson(task))
+    )
     .catch(errorHandler(res));
 };
 
@@ -37,14 +46,16 @@ export const getTasks = (req, res) => {
   const { user, year, month } = req.query;
   client
     .query(getAllByIndexName("tasks_by_user_year_month", [user, +year, +month]))
-    .then((tasks: any) => res.status(200).json(tasks.data.map(taskToJson)))
+    .then((tasks: any) => resultHandler(res, tasks.data.map(taskToJson)))
     .catch(errorHandler(res));
 };
 
 export const getTask = (req, res) => {
   client
     .query(getCollectionItemById("tasks", req.params.id))
-    .then((task) => res.status(200).json(taskToJson(task)))
+    .then((task: CollectionItem<TaskCollectionItemData>) =>
+      resultHandler(res, taskToJson(task))
+    )
     .catch(errorHandler(res));
 };
 
@@ -54,7 +65,9 @@ export const editTask = (req, res) => {
   const data = taskDataFromReq(req);
   client
     .query(updateCollectionItemById("tasks", req.params.id, data))
-    .then((task) => res.json(taskToJson(task)))
+    .then((task: CollectionItem<TaskCollectionItemData>) =>
+      res.json(taskToJson(task))
+    )
     .catch(errorHandler(res));
 };
 
@@ -64,6 +77,6 @@ export const deleteTask = (req, res) => {
   const { id } = req.params;
   client
     .query(deleteCollectionItemById("tasks", id))
-    .then((task) => res.status(200).json(id))
+    .then((task) => resultHandler(res, id))
     .catch(errorHandler(res));
 };

@@ -3,17 +3,27 @@ import {
   deleteCollectionItemById,
   getAllByIndexName,
   updateCollectionItemById,
-} from "../utils/fauna-query-util";
-import { client } from "./client";
-import { dayDataFromReq, dayToJson } from "../models/day";
+} from "../utils/query/fauna-query-util";
+import {
+  DayCollectionItemData,
+  DayRequestParams,
+  dayDataFromReq,
+  dayToJson,
+} from "../models/day";
 import { errorHandler } from "../utils/error-util";
+import { CollectionItem } from "models/intefaces-collections";
+import { resultHandler } from "../utils/response-util";
+import { userDataFromKey } from "../utils/auth/key-util";
+import { client } from "utils/query/client";
+import { Response } from "express";
+import { Request } from "utils/query/interfaces";
 
-const _queryDays = (params, singleAction?) => {
-  if (!params.user) {
-    return Promise.reject(new Error("user not specified"));
-  }
-
-  const { user, year, month, day } = params;
+const _queryDays = (
+  req: Request<DayRequestParams>,
+  singleAction?: "return-empty" | "require"
+): Promise<CollectionItem<DayCollectionItemData>[]> => {
+  const username = userDataFromKey(params.token).username;
+  const { year, month, day } = params;
   if (day == null && singleAction === "return-empty") {
     return Promise.resolve([]);
   }
@@ -23,24 +33,22 @@ const _queryDays = (params, singleAction?) => {
   const indexName =
     day != null ? "days_by_user_year_month_day" : "days_by_user_year_month";
   const matchParams =
-    day != null ? [user, +year, +month, +day] : [user, +year, +month];
-  return client
-    .query(getAllByIndexName(indexName, matchParams))
-    .then((r: any) => r.data || []);
+    day != null ? [username, +year, +month, +day] : [username, +year, +month];
+  return client.getAllByIndexName(indexName, matchParams);
 };
 
 // CREATE
 
-export const addDay = (req, res) => {
-  _queryDays(req.query, "require")
+export const addDay = (req: Request<DayRequestParams>, res: Response) => {
+  _queryDays(req, "require")
     .then((days) => {
       if (days.length) {
         editDay(req, res);
       } else {
-        const data = dayDataFromReq(req);
+        const data = dayDataFromReq(req) as DayCollectionItemData;
         client
-          .query(createCollectionItem("days", data))
-          .then((day) => res.status(200).json(dayToJson(day)))
+          .createCollectionItem("days", data)
+          .then((day) => resultHandler(res, dayToJson(day)))
           .catch(errorHandler(res));
       }
     })
@@ -49,28 +57,28 @@ export const addDay = (req, res) => {
 
 // READ
 
-export const getDays = (req, res) => {
-  _queryDays(req.query)
-    .then((days) => res.status(200).json(days.map(dayToJson)))
+export const getDays = (req: Request<DayRequestParams>, res: Response) => {
+  _queryDays(req)
+    .then((days) => resultHandler(res, days.map(dayToJson)))
     .catch(errorHandler(res));
 };
 
-const getDay = (req, res) => {
-  _queryDays(req.query, "return-empty")
-    .then((days) => res.status(200).json(days.map(dayToJson)[0]))
+export const getDay = (req: Request<DayRequestParams>, res: Response) => {
+  _queryDays(req, "return-empty")
+    .then((days) => resultHandler(res, days.map(dayToJson)[0]))
     .catch(errorHandler(res));
 };
 
 // UPDATE
 
-export const editDay = (req, res) => {
-  _queryDays(req.query, "require")
+export const editDay = (req: Request<DayRequestParams>, res: Response) => {
+  _queryDays(req, "require")
     .then((days) => {
       if (days.length) {
-        const data = dayDataFromReq(req);
+        const data = dayDataFromReq(req) as DayCollectionItemData;
         client
-          .query(updateCollectionItemById("days", days[0].ref.id, data))
-          .then((day) => res.json(dayToJson(day)))
+          .updateCollectionItemById("days", days[0].ref.id, data)
+          .then((day) => resultHandler(res, dayToJson(day)))
           .catch(errorHandler(res));
       } else {
         addDay(req, res);
@@ -81,15 +89,17 @@ export const editDay = (req, res) => {
 
 // DELETE
 
-export const deleteDay = (req, res) => {
-  _queryDays(req.query, "require")
+export const deleteDay = (req: Request<DayRequestParams>, res: Response) => {
+  _queryDays(req, "require")
     .then((days) => {
       if (days.length) {
         const id = days[0].ref.id;
         client
-          .query(deleteCollectionItemById("days", id))
-          .then((day) => res.status(200).json(id))
+          .deleteCollectionItemById("days", id)
+          .then(() => resultHandler(res, id))
           .catch(errorHandler(res));
+      } else {
+        errorHandler(res)(new Error("day not found"));
       }
     })
     .catch(errorHandler(res));
