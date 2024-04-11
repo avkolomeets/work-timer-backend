@@ -1,30 +1,14 @@
+import { CollectionItem } from "models/intefaces-collections";
+import { userDataFromReq, userToJson } from "../models/user";
+import { userDataFromKey, userDataToKey } from "../utils/auth/key-util";
+import { errorHandler } from "../utils/error-util";
+import { removeMissingProperties } from "../utils/json-util";
 import {
   createCollectionItem,
   deleteCollectionItemById,
-  getAllByIndexName,
   updateCollectionItemById,
 } from "../utils/query/fauna-query-util";
-import { client } from "./client";
-import { userDataFromReq, userToJson } from "../models/user";
-import { errorHandler } from "../utils/error-util";
 import { resultHandler } from "../utils/response-util";
-import {
-  CollectionItem,
-  UserCollectionItemData,
-} from "models/intefaces-collections";
-import { userDataFromKey, userDataToKey } from "../utils/auth/key-util";
-import { removeMissingProperties } from "../utils/json-util";
-
-const _queryUser = (
-  params
-): Promise<CollectionItem<UserCollectionItemData>> => {
-  if (!params.username) {
-    return Promise.reject(new Error("username not specified"));
-  }
-  return client
-    .query(getAllByIndexName("users_by_name", params.username))
-    .then((r: any) => (r.data || [])[0]);
-};
 
 // CREATE
 

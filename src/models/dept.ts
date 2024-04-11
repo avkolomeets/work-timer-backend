@@ -1,9 +1,8 @@
 import { Request } from "utils/query/interfaces";
+import { requestToParams } from "utils/query/request-util";
 import { removeMissingProperties } from "../utils/json-util";
 import { toNumberOrUndefined } from "../utils/number-util";
 import { CollectionItem } from "./intefaces-collections";
-import { requestToParams } from "utils/query/request-util";
-import { userDataFromKey } from "utils/auth/key-util";
 
 export type DeptCollectionItemData = {
   user: string;
@@ -24,10 +23,8 @@ export type DeptRequestParams = Partial<{
 }>;
 
 export const deptDataFromReq = (req: Request<DeptRequestParams>) => {
-  const { token, dept } = requestToParams(req);
-  const user = token && userDataFromKey(token)?.username;
+  const { dept } = requestToParams(req);
   return removeMissingProperties({
-    user,
     dept: toNumberOrUndefined(dept),
   });
 };

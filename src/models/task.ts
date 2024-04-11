@@ -3,7 +3,6 @@ import { removeMissingProperties } from "../utils/json-util";
 import { toNumberOrUndefined } from "../utils/number-util";
 import { CollectionItem } from "./intefaces-collections";
 import { Request } from "utils/query/interfaces";
-import { userDataFromKey } from "utils/auth/key-util";
 
 export type TaskCollectionItemData = {
   user: string;
@@ -28,6 +27,7 @@ export const taskToJson = (
 
 export type TaskRequestParams = Partial<{
   token: string;
+  id: string;
   year: number;
   month: number;
   link: string;
@@ -39,11 +39,9 @@ export type TaskRequestParams = Partial<{
 }>;
 
 export const taskDataFromReq = (req: Request<TaskRequestParams>) => {
-  const { token, year, month, link, label, time, type, created, modified } =
+  const { year, month, link, label, time, type, created, modified } =
     requestToParams(req);
-  const user = token && userDataFromKey(token)?.username;
   return removeMissingProperties({
-    user,
     year: toNumberOrUndefined(year),
     month: toNumberOrUndefined(month),
     link,

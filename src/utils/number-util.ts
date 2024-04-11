@@ -1,1 +1,2 @@
-export const toNumberOrUndefined = (v: any): number => (v == null ? v : +v);
+export const toNumberOrUndefined = (v: any): number | undefined =>
+  v == null ? v : +v;

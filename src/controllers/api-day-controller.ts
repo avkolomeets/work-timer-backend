@@ -1,34 +1,35 @@
-import {
-  createCollectionItem,
-  deleteCollectionItemById,
-  getAllByIndexName,
-  updateCollectionItemById,
-} from "../utils/query/fauna-query-util";
+import { Response } from "express";
 import {
   DayCollectionItemData,
   DayRequestParams,
   dayDataFromReq,
   dayToJson,
 } from "../models/day";
+import { CollectionItem } from "../models/intefaces-collections";
+import { queryUserByToken } from "../utils/auth/user-util";
 import { errorHandler } from "../utils/error-util";
-import { CollectionItem } from "models/intefaces-collections";
+import { client } from "../utils/query/client";
+import { Request } from "../utils/query/interfaces";
+import { requestToParams } from "../utils/query/request-util";
 import { resultHandler } from "../utils/response-util";
-import { userDataFromKey } from "../utils/auth/key-util";
-import { client } from "utils/query/client";
-import { Response } from "express";
-import { Request } from "utils/query/interfaces";
 
 const _queryDays = (
   req: Request<DayRequestParams>,
-  singleAction?: "return-empty" | "require"
+  username: string,
+  singleAction: "return-empty" | "require" | null
 ): Promise<CollectionItem<DayCollectionItemData>[]> => {
-  const username = userDataFromKey(params.token).username;
-  const { year, month, day } = params;
+  const { year, month, day } = requestToParams(req);
   if (day == null && singleAction === "return-empty") {
     return Promise.resolve([]);
   }
   if (day == null && singleAction === "require") {
-    Promise.reject(new Error("day is not specified"));
+    return Promise.reject(new Error("day is not specified"));
+  }
+  if (!year) {
+    return Promise.reject(new Error("year is not specified"));
+  }
+  if (!month) {
+    return Promise.reject(new Error("month is not specified"));
   }
   const indexName =
     day != null ? "days_by_user_year_month_day" : "days_by_user_year_month";
@@ -40,17 +41,21 @@ const _queryDays = (
 // CREATE
 
 export const addDay = (req: Request<DayRequestParams>, res: Response) => {
-  _queryDays(req, "require")
-    .then((days) => {
-      if (days.length) {
-        editDay(req, res);
-      } else {
-        const data = dayDataFromReq(req) as DayCollectionItemData;
-        client
-          .createCollectionItem("days", data)
-          .then((day) => resultHandler(res, dayToJson(day)))
-          .catch(errorHandler(res));
-      }
+  queryUserByToken(req)
+    .then((user) => {
+      return _queryDays(req, user.name, "require").then((days) => {
+        if (days.length) {
+          editDay(req, res);
+        } else {
+          const data = dayDataFromReq(req);
+          return client
+            .createCollectionItem<DayCollectionItemData>("days", {
+              user: user.name,
+              ...data,
+            })
+            .then((day) => resultHandler(res, dayToJson(day)));
+        }
+      });
     })
     .catch(errorHandler(res));
 };
@@ -58,31 +63,44 @@ export const addDay = (req: Request<DayRequestParams>, res: Response) => {
 // READ
 
 export const getDays = (req: Request<DayRequestParams>, res: Response) => {
-  _queryDays(req)
-    .then((days) => resultHandler(res, days.map(dayToJson)))
+  queryUserByToken(req)
+    .then((user) => {
+      return _queryDays(req, user.name, null).then((days) =>
+        resultHandler(res, days.map(dayToJson))
+      );
+    })
     .catch(errorHandler(res));
 };
 
 export const getDay = (req: Request<DayRequestParams>, res: Response) => {
-  _queryDays(req, "return-empty")
-    .then((days) => resultHandler(res, days.map(dayToJson)[0]))
+  queryUserByToken(req)
+    .then((user) => {
+      return _queryDays(req, user.name, "return-empty").then((days) =>
+        resultHandler(res, days.map(dayToJson)[0])
+      );
+    })
     .catch(errorHandler(res));
 };
 
 // UPDATE
 
 export const editDay = (req: Request<DayRequestParams>, res: Response) => {
-  _queryDays(req, "require")
-    .then((days) => {
-      if (days.length) {
-        const data = dayDataFromReq(req) as DayCollectionItemData;
-        client
-          .updateCollectionItemById("days", days[0].ref.id, data)
-          .then((day) => resultHandler(res, dayToJson(day)))
-          .catch(errorHandler(res));
-      } else {
-        addDay(req, res);
-      }
+  queryUserByToken(req)
+    .then((user) => {
+      return _queryDays(req, user.name, "require").then((days) => {
+        if (days.length) {
+          const data = dayDataFromReq(req);
+          return client
+            .updateCollectionItemById<DayCollectionItemData>(
+              "days",
+              days[0].ref.id,
+              data
+            )
+            .then((day) => resultHandler(res, dayToJson(day)));
+        } else {
+          addDay(req, res);
+        }
+      });
     })
     .catch(errorHandler(res));
 };
@@ -90,17 +108,18 @@ export const editDay = (req: Request<DayRequestParams>, res: Response) => {
 // DELETE
 
 export const deleteDay = (req: Request<DayRequestParams>, res: Response) => {
-  _queryDays(req, "require")
-    .then((days) => {
-      if (days.length) {
-        const id = days[0].ref.id;
-        client
-          .deleteCollectionItemById("days", id)
-          .then(() => resultHandler(res, id))
-          .catch(errorHandler(res));
-      } else {
-        errorHandler(res)(new Error("day not found"));
-      }
+  queryUserByToken(req)
+    .then((user) => {
+      return _queryDays(req, user.name, "require").then((days) => {
+        if (days.length) {
+          const id = days[0].ref.id;
+          return client
+            .deleteCollectionItemById("days", id)
+            .then(() => resultHandler(res, id));
+        } else {
+          return Promise.reject(new Error("day not found"));
+        }
+      });
     })
     .catch(errorHandler(res));
 };
