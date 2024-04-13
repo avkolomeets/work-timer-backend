@@ -8,6 +8,6 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/tests/**/*.ts", "tests/fetch-util.js"],
   "exclude": ["node_modules", "dist"]
 }

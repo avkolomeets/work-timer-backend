@@ -1,7 +1,19 @@
-import { Request } from "../utils/query/interfaces";
-import { removeMissingProperties } from "../utils/json-util";
 import { CollectionItem } from "./intefaces-collections";
-import { requestToParams } from "utils/query/request-util";
+
+export const USERS_COLLECTION = {
+  name: "users",
+  users_by_name: "users_by_name",
+};
+
+export const userToJson = (
+  user: Pick<CollectionItem<UserCollectionItemData>, "data">
+): Omit<UserCollectionItemData, "key"> => {
+  return {
+    name: user.data.name,
+    fullName: user.data.fullName,
+    logo: user.data.logo,
+  };
+};
 
 export type UserCollectionItemData = {
   name: string;
@@ -10,34 +22,10 @@ export type UserCollectionItemData = {
   logo: string;
 };
 
-export const userToJson = (
-  user: CollectionItem<UserCollectionItemData>
-): UserCollectionItemData => {
-  return {
-    ...user.data,
-  };
-};
-
 export type UserRequestParams = Partial<{
+  token: string;
   username: string;
   password: string;
   fullName: string;
   logo: string;
 }>;
-
-export const userDataFromReq = (
-  req: Request<UserRequestParams>
-): Partial<{
-  username: string;
-  password: string;
-  fullName: string;
-  logo: string;
-}> => {
-  const { username, password, fullName, logo } = requestToParams(req);
-  return removeMissingProperties({
-    username,
-    password,
-    fullName,
-    logo,
-  });
-};

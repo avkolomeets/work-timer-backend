@@ -1,8 +1,14 @@
-import { Request } from "utils/query/interfaces";
-import { requestToParams } from "utils/query/request-util";
 import { removeMissingProperties } from "../utils/json-util";
 import { toNumberOrUndefined } from "../utils/number-util";
+import { Request } from "../utils/query/interfaces";
+import { requestToParams } from "../utils/query/request-util";
 import { CollectionItem } from "./intefaces-collections";
+
+export const DAYS_COLLECTION = {
+  name: "days",
+  days_by_user_year_month_day: "days_by_user_year_month_day",
+  days_by_user_year_month: "days_by_user_year_month",
+};
 
 export type DayCollectionItemData = {
   user: string;

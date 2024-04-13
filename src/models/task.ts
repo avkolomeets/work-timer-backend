@@ -1,8 +1,13 @@
-import { requestToParams } from "../utils/query/request-util";
 import { removeMissingProperties } from "../utils/json-util";
 import { toNumberOrUndefined } from "../utils/number-util";
+import { Request } from "../utils/query/interfaces";
+import { requestToParams } from "../utils/query/request-util";
 import { CollectionItem } from "./intefaces-collections";
-import { Request } from "utils/query/interfaces";
+
+export const TASKS_COLLECTION = {
+  name: "tasks",
+  tasks_by_user_year_month: "tasks_by_user_year_month",
+};
 
 export type TaskCollectionItemData = {
   user: string;
@@ -27,7 +32,6 @@ export const taskToJson = (
 
 export type TaskRequestParams = Partial<{
   token: string;
-  id: string;
   year: number;
   month: number;
   link: string;

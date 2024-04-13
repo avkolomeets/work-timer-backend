@@ -1,5 +1,6 @@
 import { Response } from "express";
 import {
+  DAYS_COLLECTION,
   DayCollectionItemData,
   DayRequestParams,
   dayDataFromReq,
@@ -23,16 +24,18 @@ const _queryDays = (
     return Promise.resolve([]);
   }
   if (day == null && singleAction === "require") {
-    return Promise.reject(new Error("day is not specified"));
+    return Promise.reject(new Error("`day` is required."));
   }
   if (!year) {
-    return Promise.reject(new Error("year is not specified"));
+    return Promise.reject(new Error("`year` is required."));
   }
   if (!month) {
-    return Promise.reject(new Error("month is not specified"));
+    return Promise.reject(new Error("`month` is required."));
   }
   const indexName =
-    day != null ? "days_by_user_year_month_day" : "days_by_user_year_month";
+    day != null
+      ? DAYS_COLLECTION.days_by_user_year_month_day
+      : DAYS_COLLECTION.days_by_user_year_month;
   const matchParams =
     day != null ? [username, +year, +month, +day] : [username, +year, +month];
   return client.getAllByIndexName(indexName, matchParams);
@@ -92,7 +95,7 @@ export const editDay = (req: Request<DayRequestParams>, res: Response) => {
           const data = dayDataFromReq(req);
           return client
             .updateCollectionItemById<DayCollectionItemData>(
-              "days",
+              DAYS_COLLECTION.name,
               days[0].ref.id,
               data
             )
@@ -114,8 +117,8 @@ export const deleteDay = (req: Request<DayRequestParams>, res: Response) => {
         if (days.length) {
           const id = days[0].ref.id;
           return client
-            .deleteCollectionItemById("days", id)
-            .then(() => resultHandler(res, id));
+            .deleteCollectionItemById(DAYS_COLLECTION.name, id)
+            .then(() => resultHandler(res, { success: true, id }));
         } else {
           return Promise.reject(new Error("day not found"));
         }
