@@ -24,7 +24,12 @@ export async function queryUserByToken(
     );
   }
   const userData = userDataFromKey(token);
-  return queryUserByCredentials(userData?.username, userData?.password);
+  return queryUserByCredentials(userData?.username, userData?.password).catch(
+    () =>
+      Promise.reject(
+        new CustomError("Token is invalid.", ERROR_CODE_TOKEN_INVALID)
+      )
+  );
 }
 
 /**
@@ -43,12 +48,10 @@ export async function queryUserByCredentials(
   }
   const user = await queryUserByName(username);
   if (!user) {
-    return Promise.reject(new Error("User doesn't exist."));
+    return Promise.reject(new Error("Invalid credentials."));
   }
   if (userDataFromKey(user.data.key)?.password !== password) {
-    return Promise.reject(
-      new CustomError("Token is invalid.", ERROR_CODE_TOKEN_INVALID)
-    );
+    return Promise.reject(new Error("Invalid credentials."));
   }
   return { id: user.ref.id, ...user.data };
 }

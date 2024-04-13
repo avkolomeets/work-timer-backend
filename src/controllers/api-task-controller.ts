@@ -48,12 +48,11 @@ export const getTasks = (req: Request<TaskRequestParams>, res: Response) => {
         return Promise.reject(new Error("`month` is required."));
       }
       return client
-        .getAllByIndexName(TASKS_COLLECTION.tasks_by_user_year_month, [
-          user.name,
-          +year,
-          +month,
-        ])
-        .then((tasks: any) => resultHandler(res, tasks.data.map(taskToJson)));
+        .getAllByIndexName<TaskCollectionItemData>(
+          TASKS_COLLECTION.tasks_by_user_year_month,
+          [user.name, +year, +month]
+        )
+        .then((tasks) => resultHandler(res, tasks.map(taskToJson)));
     })
     .catch(errorHandler(res));
 };

@@ -41,7 +41,7 @@ export const addUser = (req: Request<UserRequestParams>, res: Response) => {
     .then((user) => {
       if (user) {
         return Promise.reject(
-          new Error(`User #${user.data.name} already exists`)
+          new Error(`User '${user.data.name}' already exists`)
         );
       }
       const data = {

@@ -5,6 +5,7 @@ export const USERS_COLLECTION = {
   users_by_name: "users_by_name",
 };
 
+/** Doesn't expose `key`. */
 export const userToJson = (
   user: Pick<CollectionItem<UserCollectionItemData>, "data">
 ): Omit<UserCollectionItemData, "key"> => {
