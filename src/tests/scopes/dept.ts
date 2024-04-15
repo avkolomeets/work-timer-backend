@@ -1,4 +1,4 @@
-import { ERROR_CODE_TOKEN_REQUIRED } from "../../utils/error-util";
+import { ERROR_CODES } from "../../utils/response/error-util";
 import { TempUser, createTempUser } from "../utils/test-user-util";
 import { addCase } from "../utils/test-util";
 
@@ -34,14 +34,14 @@ export function addDeptTests(): void {
     "get",
     "dept",
     null,
-    ({ code }) => code === ERROR_CODE_TOKEN_REQUIRED,
+    ({ code }) => code === ERROR_CODES.tokenRequired,
     scope,
     "Read dept (no token)"
   );
 
   // UPDATE
   addCase(
-    "put",
+    "patch",
     "dept",
     () => ({ token: tempUser.token, dept: 2000 }),
     ({ data }) => data.dept === 2000,

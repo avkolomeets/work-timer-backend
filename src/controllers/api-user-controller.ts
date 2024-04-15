@@ -11,11 +11,11 @@ import {
   queryUserByName,
   queryUserByToken,
 } from "../utils/auth/user-util";
-import { errorHandler } from "../utils/error-util";
 import { client } from "../utils/query/client";
 import { Request } from "../utils/query/interfaces";
 import { requestToParams } from "../utils/query/request-util";
-import { resultHandler } from "../utils/response-util";
+import { errorHandler } from "../utils/response/error-util";
+import { resultHandler } from "../utils/response/result-util";
 
 // CREATE
 
@@ -102,7 +102,7 @@ export const checkToken = (req: Request<{ token?: string }>, res: Response) => {
 
 // UPDATE
 
-export const editUser = (req: Request<UserRequestParams>, res: Response) => {
+export const updateUser = (req: Request<UserRequestParams>, res: Response) => {
   queryUserByToken(req)
     .then((user) => {
       const { fullName, logo } = requestToParams(req);
@@ -121,10 +121,9 @@ export const editUser = (req: Request<UserRequestParams>, res: Response) => {
 export const deleteUser = (req: Request<{ token?: string }>, res: Response) => {
   queryUserByToken(req)
     .then((user) => {
-      const id = user.id;
       return client
-        .deleteCollectionItemById(USERS_COLLECTION.name, id)
-        .then(() => resultHandler(res, { success: true, id }));
+        .deleteCollectionItemById(USERS_COLLECTION.name, user.id)
+        .then(() => resultHandler(res, { success: true }));
     })
     .catch(errorHandler(res));
 };

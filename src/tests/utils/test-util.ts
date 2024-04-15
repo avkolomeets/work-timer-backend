@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { fetchDelete, getJSON, postJSON, putJSON } from "./fetch-util";
+import { fetchDelete, getJSON, patchJSON, postJSON } from "./fetch-util";
 
 const errorMsg = chalk.bgKeyword("white").redBright;
 const successMsg = chalk.bgKeyword("green").white;
@@ -9,7 +9,7 @@ export const TEST_BASE_URL = "http://localhost:5000/api/";
 const cases: (() => Promise<boolean>)[] = [];
 
 export function addCase(
-  method: "get" | "post" | "put" | "delete",
+  method: "get" | "post" | "patch" | "delete",
   suffixUrl: string | (() => string),
   data: any | (() => any),
   expected: (res: { code: number; data: any }) => boolean | Promise<boolean>,
@@ -27,8 +27,8 @@ export function addCase(
         ? getJSON(url)
         : method === "post"
         ? postJSON(url, data)
-        : method === "put"
-        ? putJSON(url, data)
+        : method === "patch"
+        ? patchJSON(url, data)
         : fetchDelete(url);
     return promise.then(async (res) => {
       const pass = await expected(res);

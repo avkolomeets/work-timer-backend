@@ -1,13 +1,9 @@
 import { CollectionItem } from "models/intefaces-collections";
 import { USERS_COLLECTION, UserCollectionItemData } from "../../models/user";
-import {
-  CustomError,
-  ERROR_CODE_TOKEN_INVALID,
-  ERROR_CODE_TOKEN_REQUIRED,
-} from "../error-util";
 import { client } from "../query/client";
 import { Request } from "../query/interfaces";
 import { requestToParams } from "../query/request-util";
+import { CustomError, ERROR_CODES } from "../response/error-util";
 import { userDataFromKey } from "./key-util";
 
 /**
@@ -20,14 +16,14 @@ export async function queryUserByToken(
   const { token } = requestToParams(req);
   if (!token) {
     return Promise.reject(
-      new CustomError("Token is required.", ERROR_CODE_TOKEN_REQUIRED)
+      new CustomError("Token is required.", ERROR_CODES.tokenRequired)
     );
   }
   const userData = userDataFromKey(token);
   return queryUserByCredentials(userData?.username, userData?.password).catch(
     () =>
       Promise.reject(
-        new CustomError("Token is invalid.", ERROR_CODE_TOKEN_INVALID)
+        new CustomError("Token is invalid.", ERROR_CODES.tokenInvalid)
       )
   );
 }

@@ -1,4 +1,4 @@
-import { ERROR_CODE_TOKEN_REQUIRED } from "../../utils/error-util";
+import { ERROR_CODES } from "../../utils/response/error-util";
 import { TempUser, createTempUser } from "../utils/test-user-util";
 import { addCase } from "../utils/test-util";
 
@@ -22,7 +22,7 @@ export function addTaskTests(): void {
   // CREATE
   addCase(
     "post",
-    "task",
+    "tasks",
     async () => {
       tempUser = await createTempUser();
       return {
@@ -41,7 +41,7 @@ export function addTaskTests(): void {
   // READ (by id)
   addCase(
     "get",
-    () => `task/${taskId}?token=${tempUser.token}`,
+    () => `tasks/${taskId}?token=${tempUser.token}`,
     null,
     ({ data }) => data.id === taskId && data.link === taskTemplate.link,
     scope,
@@ -51,9 +51,9 @@ export function addTaskTests(): void {
   // READ (by id, no token)
   addCase(
     "get",
-    () => `task/${taskId}`,
+    () => `tasks/${taskId}`,
     null,
-    ({ code }) => code === ERROR_CODE_TOKEN_REQUIRED,
+    ({ code }) => code === ERROR_CODES.tokenRequired,
     scope,
     "Read task (no token)"
   );
@@ -87,8 +87,8 @@ export function addTaskTests(): void {
 
   // UPDATE
   addCase(
-    "put",
-    () => `task/${taskId}`,
+    "patch",
+    () => `tasks/${taskId}`,
     () => ({ token: tempUser.token, label: "Updated label" }),
     ({ data }) => data.id === taskId && data.label === "Updated label",
     scope,
@@ -98,7 +98,7 @@ export function addTaskTests(): void {
   // DELETE
   addCase(
     "delete",
-    () => `task/${taskId}?token=${tempUser.token}`,
+    () => `tasks/${taskId}?token=${tempUser.token}`,
     null,
     async ({ data }) => {
       await tempUser.remove();

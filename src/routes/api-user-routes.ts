@@ -1,13 +1,13 @@
+import { Router } from "express";
 import {
   addUser,
   checkToken,
   checkUserName,
   deleteUser,
-  editUser,
   getToken,
   getUser,
+  updateUser,
 } from "../controllers/api-user-controller";
-import { Router } from "express";
 
 import express from "express";
 
@@ -24,6 +24,6 @@ apiUserRoutes.get("/api/checkToken", checkToken);
 // Get User
 apiUserRoutes.get("/api/user", getUser);
 // Update User
-apiUserRoutes.put("/api/user", editUser);
+apiUserRoutes.patch("/api/user", updateUser);
 // Delete User
 apiUserRoutes.delete("/api/user", deleteUser);

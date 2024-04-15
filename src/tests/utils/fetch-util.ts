@@ -3,7 +3,7 @@ import { removeMissingProperties } from "../../utils/json-util";
 
 export async function getJSON(url: string) {
   const response = await fetch(url, {
-    method: "GET", // or "PUT"
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
@@ -15,17 +15,17 @@ export async function getJSON(url: string) {
 }
 
 export async function postJSON(url: string, data: string | any) {
-  return _postPutJSON(url, data, "POST");
+  return _postPatchJSON(url, data, "POST");
 }
 
-export async function putJSON(url: string, data: string | any) {
-  return _postPutJSON(url, data, "PUT");
+export async function patchJSON(url: string, data: string | any) {
+  return _postPatchJSON(url, data, "PATCH");
 }
 
-async function _postPutJSON(
+async function _postPatchJSON(
   url: string,
   data: string | any,
-  method: "POST" | "PUT"
+  method: "POST" | "PATCH"
 ) {
   const response = await fetch(url, {
     method,

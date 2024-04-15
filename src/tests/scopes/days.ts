@@ -1,4 +1,4 @@
-import { ERROR_CODE_TOKEN_REQUIRED } from "../../utils/error-util";
+import { ERROR_CODES } from "../../utils/response/error-util";
 import { TempUser, createTempUser } from "../utils/test-user-util";
 import { addCase } from "../utils/test-util";
 
@@ -50,7 +50,7 @@ export function addDayTests(): void {
     () =>
       `day?year=${dayTemplate.year}&month=${dayTemplate.month}&day=${dayTemplate.day}`,
     null,
-    ({ code }) => code === ERROR_CODE_TOKEN_REQUIRED,
+    ({ code }) => code === ERROR_CODES.tokenRequired,
     scope,
     "Read day (no token)"
   );
@@ -81,7 +81,7 @@ export function addDayTests(): void {
 
   // UPDATE
   addCase(
-    "put",
+    "patch",
     () =>
       `day?token=${tempUser.token}&year=${dayTemplate.year}&month=${dayTemplate.month}&day=${dayTemplate.day}`,
     () => ({ time: 1000, workIntervals: [[2000, 3000]] }),

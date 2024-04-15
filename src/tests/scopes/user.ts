@@ -1,8 +1,4 @@
-import {
-  ERROR_CODE_BAD_REQUEST,
-  ERROR_CODE_TOKEN_INVALID,
-  ERROR_CODE_TOKEN_REQUIRED,
-} from "../../utils/error-util";
+import { ERROR_CODES } from "../../utils/response/error-util";
 import { addCase } from "../utils/test-util";
 
 export function addUserTests(): void {
@@ -45,7 +41,7 @@ export function addUserTests(): void {
     "post",
     "user",
     { username, fullName: "Test2", password },
-    ({ code }) => code === ERROR_CODE_BAD_REQUEST,
+    ({ code }) => code === ERROR_CODES.badRequest,
     scope,
     "Create user with the same name"
   );
@@ -76,7 +72,7 @@ export function addUserTests(): void {
     "get",
     () => "user",
     null,
-    ({ code }) => code === ERROR_CODE_TOKEN_REQUIRED,
+    ({ code }) => code === ERROR_CODES.tokenRequired,
     scope,
     "Read user data - no token"
   );
@@ -86,29 +82,29 @@ export function addUserTests(): void {
     "get",
     () => "user?token=abc",
     null,
-    ({ code }) => code === ERROR_CODE_TOKEN_INVALID,
+    ({ code }) => code === ERROR_CODES.tokenInvalid,
     scope,
     "Read user data - incorrect token"
   );
 
-  // EDIT
+  // UPDATE
   addCase(
-    "put",
+    "patch",
     () => "user",
     () => ({ token, fullName: "Test2_NEW" }),
     ({ data }) => data.fullName === "Test2_NEW",
     scope,
-    "Edit user fullName"
+    "Update user fullName"
   );
 
-  // READ (after editing)
+  // READ (after updating)
   addCase(
     "get",
     () => "user?token=" + token,
     null,
     ({ data }) => data.fullName === "Test2_NEW",
     scope,
-    "Read after editing"
+    "Read after updating"
   );
 
   // DELETE

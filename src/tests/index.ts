@@ -1,6 +1,6 @@
-import { addDayTests } from "./scopes/day";
+import { addDayTests } from "./scopes/days";
 import { addDeptTests } from "./scopes/dept";
-import { addTaskTests } from "./scopes/task";
+import { addTaskTests } from "./scopes/tasks";
 import { addUserTests } from "./scopes/user";
 import { runTests } from "./utils/test-util";
 

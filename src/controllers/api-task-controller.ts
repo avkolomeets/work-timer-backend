@@ -7,23 +7,23 @@ import {
   taskToJson,
 } from "../models/task";
 import { queryUserByToken } from "../utils/auth/user-util";
-import { errorHandler } from "../utils/error-util";
 import { client } from "../utils/query/client";
 import { Request } from "../utils/query/interfaces";
 import { requestToParams } from "../utils/query/request-util";
-import { resultHandler } from "../utils/response-util";
+import { errorHandler } from "../utils/response/error-util";
+import { resultHandler } from "../utils/response/result-util";
 
 // CREATE
 
-export const addTask = (req: Request<TaskRequestParams>, res: Response) => {
+export const createTask = (req: Request<TaskRequestParams>, res: Response) => {
   queryUserByToken(req)
     .then((user) => {
       const data = taskDataFromReq(req);
       if (!data.year) {
-        return Promise.reject(new Error("year not specified"));
+        return Promise.reject(new Error("`year` is required."));
       }
       if (!data.month) {
-        return Promise.reject(new Error("month not specified"));
+        return Promise.reject(new Error("`month` is required."));
       }
       return client
         .createCollectionItem<TaskCollectionItemData>(TASKS_COLLECTION.name, {
@@ -73,7 +73,7 @@ export const getTask = (req: Request<TaskRequestParams>, res: Response) => {
 
 // UPDATE
 
-export const editTask = (req: Request<TaskRequestParams>, res: Response) => {
+export const updateTask = (req: Request<TaskRequestParams>, res: Response) => {
   queryUserByToken(req)
     .then(() => {
       const id = req.params.id;

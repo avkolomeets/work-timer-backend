@@ -8,10 +8,14 @@ import {
   deptToJson,
 } from "../models/dept";
 import { queryUserByToken } from "../utils/auth/user-util";
-import { errorHandler } from "../utils/error-util";
 import { client } from "../utils/query/client";
 import { Request } from "../utils/query/interfaces";
-import { resultHandler } from "../utils/response-util";
+import {
+  CustomError,
+  ERROR_CODES,
+  errorHandler,
+} from "../utils/response/error-util";
+import { resultHandler } from "../utils/response/result-util";
 
 const _queryDepts = (
   username: string
@@ -21,12 +25,12 @@ const _queryDepts = (
 
 // CREATE
 
-export const addDept = (req: Request<DeptRequestParams>, res: Response) => {
+export const createDept = (req: Request<DeptRequestParams>, res: Response) => {
   queryUserByToken(req)
     .then((user) => {
       return _queryDepts(user.name).then((depts) => {
         if (depts.length) {
-          editDept(req, res);
+          updateOrCreateDept(req, res);
         } else {
           const data = deptDataFromReq(req);
           return client
@@ -58,7 +62,10 @@ export const getDept = (req: Request<DeptRequestParams>, res: Response) => {
 
 // UPDATE
 
-export const editDept = (req: Request<DeptRequestParams>, res: Response) => {
+export const updateOrCreateDept = (
+  req: Request<DeptRequestParams>,
+  res: Response
+) => {
   queryUserByToken(req)
     .then((user) => {
       return _queryDepts(user.name).then((depts) => {
@@ -72,7 +79,7 @@ export const editDept = (req: Request<DeptRequestParams>, res: Response) => {
             )
             .then((dept) => resultHandler(res, deptToJson(dept)));
         } else {
-          addDept(req, res);
+          createDept(req, res);
         }
       });
     })
@@ -89,9 +96,11 @@ export const deleteDept = (req: Request<DeptRequestParams>, res: Response) => {
           const id = depts[0].ref.id;
           return client
             .deleteCollectionItemById(DEPTS_COLLECTION.name, id)
-            .then(() => resultHandler(res, { success: true, id }));
+            .then(() => resultHandler(res, { success: true }));
         } else {
-          return Promise.reject(new Error("item not found"));
+          return Promise.reject(
+            new CustomError("item not found", ERROR_CODES.notFound)
+          );
         }
       });
     })
