@@ -20,7 +20,6 @@ const app: Application = express();
 app.use(cors());
 app.set("view engine", "ejs");
 app.use(express.static("src/views/styles"));
-//app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 const PORT = process.env.PORT || 5000;
 (app as any).listen(PORT, (error: any) => {
