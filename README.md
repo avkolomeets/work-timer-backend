@@ -7,7 +7,7 @@ https://work-timer-backend.onrender.com
 https://work-timer-backend.onrender.com/error
 
 ### Get tasks for the default user
-https://work-timer-backend.onrender.com/api/tasks?user=alex&year=2024&month=4
+https://work-timer-backend.onrender.com/api/tasks?user=alex&year=2024&month=4 (will need a token)
 
 # Info
 
