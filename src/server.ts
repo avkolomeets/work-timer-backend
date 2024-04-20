@@ -21,7 +21,7 @@ app.use(cors());
 app.set("view engine", "ejs");
 app.use(express.static("src/views/styles"));
 app.use(express.json());
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 (app as any).listen(PORT, (error: any) => {
   error
     ? console.log(errorMsg(error))
