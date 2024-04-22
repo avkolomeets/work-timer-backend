@@ -2,7 +2,7 @@
   "name": "work-timer-backend",
   "version": "1.0.0",
   "description": "Backend for the Work Timer app.",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "start": "npm run build && node dist/server.js",
     "test": "npm run build && node dist/tests/index.js",
