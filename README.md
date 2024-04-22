@@ -9,6 +9,22 @@ https://work-timer-backend.onrender.com/error
 ### Get tasks for the default user
 https://work-timer-backend.onrender.com/api/tasks?user=alex&year=2024&month=4 (will need a token)
 
+# Api
+
+### User
+
+[POST] /api/user - creates a new user
+
+### Tasks
+
+[GET] /api/
+
+### Days
+
+### Dept
+
+[GET] /api/dept
+
 # Info
 
 Backend for work-timer-react app. Includes the following features.
