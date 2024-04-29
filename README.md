@@ -1,13 +1,13 @@
 # Demo
 
 ### Welcome page
-https://work-timer-backend.onrender.com
+https://work-timer-backend-production.up.railway.app/
 
 ### Error page
-https://work-timer-backend.onrender.com/error
+https://work-timer-backend-production.up.railway.app/error
 
 ### Get tasks for the default user
-https://work-timer-backend.onrender.com/api/tasks?user=alex&year=2024&month=4 (will need a token)
+https://work-timer-backend-production.up.railway.app/api/tasks?user=alex&year=2024&month=4 (will need a token)
 
 # Api
 
