@@ -4,7 +4,7 @@ import { fetchDelete, getJSON, patchJSON, postJSON } from "./fetch-util";
 const errorMsg = chalk.bgKeyword("white").redBright;
 const successMsg = chalk.bgKeyword("green").white;
 
-export const TEST_BASE_URL = "http://localhost:5000/api/";
+export const TEST_BASE_URL = `http://localhost:${process.env.PORT}/api/`;
 
 const cases: (() => Promise<boolean>)[] = [];
 

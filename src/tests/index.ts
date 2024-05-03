@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { addDayTests } from "./scopes/days";
 import { addDeptTests } from "./scopes/dept";
 import { addTaskTests } from "./scopes/tasks";
